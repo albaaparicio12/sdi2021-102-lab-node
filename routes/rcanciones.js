@@ -21,12 +21,13 @@ module.exports = function(app, swig) {
     });
 
     app.post('/cancion', function(req, res) {
-        res.send("Cancion agreagda:"+req.body.nombre + "<br>"
+        res.send("Cancion agregada:"+req.body.nombre + "<br>"
         + " genero :" + req.body.genero + "<br>" +
         " precio : "+ req.body.precio);
     });
 
     app.get('/canciones/agregar', function (req, res) {
+
         let respuesta = swig.renderFile('views/bagregar.html', {
 
         });
