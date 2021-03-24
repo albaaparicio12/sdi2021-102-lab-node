@@ -4,15 +4,15 @@ module.exports = function(app, swig) {
         let autores = [ {
             "nombre" : "Kurt Cobain",
             "grupo" : "Nirvana",
-            "rol" : "Guitarrista"
+            "rol" : "guitarrista"
         },{
             "nombre" : "Chris Slade",
             "grupo" : "ACDC",
-            "rol" : "Batería"
+            "rol" : "batería"
         },{
             "nombre" : "Safaera",
             "grupo" : "Bad Bunny",
-            "rol" : "Cantante"
+            "rol" : "cantante"
         }];
 
         let respuesta = swig.renderFile('views/autores.html', {
@@ -48,7 +48,38 @@ module.exports = function(app, swig) {
         res.send(respuesta);
     });
 
+    app.get('/autores/filtrar/:rol', function (req, res) {
+        let autores = filtrarAutores(req.params.rol);
+        let respuesta = swig.renderFile('views/autores.html', {
+            autores : autores
+        });
+
+        res.send(respuesta);
+    });
+
     app.get('/autores/*', function(req, res) {
         res.redirect("/autores");
     });
+
+    function filtrarAutores(rol){
+        let listaAutoresFiltrada;
+        let listaAutores = [ {
+            "nombre" : "Kurt Cobain",
+            "grupo" : "Nirvana",
+            "rol" : "guitarrista"
+        },{
+            "nombre" : "Chris Slade",
+            "grupo" : "ACDC",
+            "rol" : "batería"
+        },{
+            "nombre" : "Safaera",
+            "grupo" : "Bad Bunny",
+            "rol" : "cantante"
+        }];
+        if(typeof rol != "undefined" && rol != null && rol !=="")
+            listaAutoresFiltrada = listaAutores.filter(autor => autor.rol.toLowerCase() === rol.toLowerCase());
+        else
+            listaAutoresFiltrada = listaAutores;
+        return listaAutoresFiltrada;
+    }
 };
