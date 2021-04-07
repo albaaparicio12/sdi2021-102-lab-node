@@ -45,7 +45,9 @@ module.exports = function(app, swig, gestorBD) {
                             if (req.files.audio != null) {
                                 let audio = req.files.audio;
                                 audio.mv('public/audios/'+id+'.mp3', function(err) {
-                                    if (err) { res.send("Error al subir el audio"); } else { res.send("Agregada id: "+ id); } }); }
+                                    if (err) { res.send("Error al subir el audio");
+                                    } else {
+                                        res.send("Agregada id: "+ id); } }); }
                         }
                     });
                 }
@@ -106,11 +108,19 @@ module.exports = function(app, swig, gestorBD) {
             if ( canciones == null ){
                 res.send("Error al recuperar la canción.");
             } else {
-                let respuesta = swig.renderFile('views/bcancion.html',
-                    {
-                        cancion : canciones[0]
-                    });
-                res.send(respuesta);
+                gestorBD.obtenerComentarios(criterio,function(comentarios){
+                    if(comentarios == null){
+                        res.send("Error al recuperar los comentarios de la canción.");
+                    } else {
+                        let respuesta = swig.renderFile('views/bcancion.html',
+                            {
+                                //comentarios
+                                cancion : canciones[0],
+                                comentarios : comentarios
+                            });
+                        res.send(respuesta);
+                    }
+                });
             }
         });
     });
