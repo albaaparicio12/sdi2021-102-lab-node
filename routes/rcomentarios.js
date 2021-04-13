@@ -5,20 +5,35 @@ module.exports = function(app, swig, gestorBD) {
             res.send("Necesita estar en sesión para esto");
             return;
         }
-        let id = req.params.id;
-        let cancion_id = req.params.cancion_id;
-        let criterio = { "_id" : gestorBD.mongo.ObjectID(id), "cancion_id" : gestorBD.mongo.ObjectID(cancion_id) };
-        //let cancion_id = { "cancion_id" : gestorBD.mongo.ObjectID(req.params.cancion_id) };
+
         let comentario = {
+            cancion_id : gestorBD.mongo.ObjectID(req.params.cancion_id),
             autor : req.session.usuario,
             texto : req.body.texto,
         }
         // Conectarse
-        gestorBD.insertarComentario(criterio,comentario, function(id){
+        gestorBD.insertarComentario(comentario, function(id){
             if (id == null) {
                 res.send("Error al insertar ");
             } else {
-                res.send("Agregado comentario id: "+id);
+                res.redirect("/cancion/"+req.params.cancion_id);
+            }
+        });
+    });
+
+    app.get("/comentario/borrar/:_id", function(req,res){
+       if(req.session.usuario == null) {
+           res.send("Necesita estar en sesión para esto");
+           return;
+       }
+
+        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id)};
+        gestorBD.borrarComentario(criterio, function(comentarios){
+            if (comentarios == null) {
+                res.send("Error al borrar comentario ");
+            } else {
+                //res.redirect("/cancion/"+req.params.cancion_id);
+                res.send("Comentario eliminado");
             }
         });
     });

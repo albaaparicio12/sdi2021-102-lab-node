@@ -5,41 +5,6 @@ module.exports = {
         this.mongo = mongo;
         this.app = app;
         },
-    insertarComentario : function(criterio,comentario,funcionCallback){
-        this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
-            if (err) {
-                funcionCallback(null);
-            } else {
-                let collection = db.collection('comentarios');
-                collection.insert(criterio, comentario, function(err, result) {
-                    if (err) {
-                        funcionCallback(null);
-                    } else {
-                        funcionCallback(result.ops[0]._id);
-                    }
-                    db.close();
-                });
-            }
-            db.close();
-        });
-    },
-    obtenerComentarios : function(criterio,funcionCallback){
-        this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
-            if (err) {
-                funcionCallback(null);
-            } else {
-                let collection = db.collection('comentarios');
-                collection.find(criterio).toArray(function(err, comentarios) {
-                    if (err) {
-                        funcionCallback(null);
-                    } else {
-                        funcionCallback(comentarios);
-                    }
-                    db.close();
-                });
-            }
-        });
-    },
     obtenerUsuarios : function(criterio,funcionCallback){
         this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
             if (err) {
@@ -125,5 +90,57 @@ module.exports = {
             });
         }
     });
-    }
+    },
+    borrarComentario : function(criterio,funcionCallback){
+        this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
+            if (err) {
+                funcionCallback(null);
+            } else {
+                let collection = db.collection('comentarios');
+                collection.remove(criterio,function(err,result){
+                    if(err){
+                        funcionCallback(null);
+                    } else {
+                        funcionCallback(result);
+                    }
+                    db.close();
+                });
+            }
+        });
+    },
+    insertarComentario : function(comentario,funcionCallback){
+        this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
+            if (err) {
+                funcionCallback(null);
+            } else {
+                let collection = db.collection('comentarios');
+                collection.insertOne(comentario, function(err, result) {
+                    if (err) {
+                        funcionCallback(null);
+                    } else {
+                        funcionCallback(result.ops[0]._id);
+                    }
+                    db.close();
+                });
+            }
+        });
+    },
+    obtenerComentarios : function(criterio,funcionCallback){
+        this.mongo.MongoClient.connect(this.app.get('db'), function(err, db) {
+            if (err) {
+                funcionCallback(null);
+            } else {
+                let collection = db.collection('comentarios');
+                collection.find(criterio).toArray(function(err, comentarios) {
+                    if (err) {
+                        funcionCallback(null);
+                    } else {
+                        funcionCallback(comentarios);
+                    }
+                    db.close();
+                });
+            }
+        });
+    },
+
 };
