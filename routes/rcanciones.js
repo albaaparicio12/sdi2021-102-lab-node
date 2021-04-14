@@ -127,19 +127,25 @@ module.exports = function(app, swig, gestorBD) {
             if ( canciones == null ){
                 res.send("Error al recuperar la canción.");
             } else {
-                let criterio = { "cancion_id" : gestorBD.mongo.ObjectID(req.params.id) };
-                gestorBD.obtenerComentarios(criterio,function(comentarios){
-                    if(comentarios == null){
-                        res.send("Error al recuperar los comentarios de la canción.");
-                    } else {
-                        let respuesta = swig.renderFile('views/bcancion.html',
-                            {
-                                cancion : canciones[0],
-                                comentarios : comentarios
-                            });
-                        res.send(respuesta);
-                    }
-                });
+                let cancionId = gestorBD.mongo.ObjectID(req.params.id);
+                let usuario = req.session.usuario;
+                let criterioComentario = { "cancion_id" : cancionId };
+                usuarioPuedeComprarCancion(usuario, cancionId, function (comprar){
+                    gestorBD.obtenerComentarios(criterioComentario,function(comentarios){
+                        if(comentarios == null){
+                            res.send("Error al recuperar los comentarios de la canción.");
+                        } else {
+                            let respuesta = swig.renderFile('views/bcancion.html',
+                                {
+                                    cancion : canciones[0],
+                                    comentarios : comentarios,
+                                    puedeComprar: comprar
+                                });
+                            res.send(respuesta);
+                        }
+                    });
+                })
+
             }
         });
     });
@@ -233,18 +239,43 @@ module.exports = function(app, swig, gestorBD) {
 
     app.get('/cancion/comprar/:id', function (req, res) {
         let cancionId = gestorBD.mongo.ObjectID(req.params.id);
-        let compra = {
-            usuario : req.session.usuario,
-            cancionId : cancionId
-        }
-        gestorBD.insertarCompra(compra ,function(idCompra){
-            if ( idCompra == null ){
-                res.send(respuesta);
+        let usuario = req.session.usuario;
+
+        usuarioPuedeComprarCancion(usuario, cancionId, function (comprar) {
+            if (comprar) {
+                let compra = {usuario: usuario, cancionId: cancionId};
+
+                gestorBD.insertarCompra(compra, function (idCompra) {
+                    if (idCompra == null) {
+                        res.send(respuesta);
+                    } else {
+                        res.redirect("/compras");
+                    }
+                });
             } else {
-                res.redirect("/compras");
+                res.send("No se puede comprar una canción que ya posees o si eres el autor.");
             }
         });
     });
+
+    function usuarioPuedeComprarCancion (usuario, cancionId, functionCallback) {
+        let criterio_esAutor = {$and: [{"_id": cancionId}, {"autor": usuario}]};
+        let criterio_cancionYaComprada = {$and: [{"cancionId": cancionId}, {"usuario": usuario}]};
+        gestorBD.obtenerCanciones(criterio_esAutor,function(canciones){
+            if(canciones == null || canciones.length > 0){
+                functionCallback(false);
+            } else {
+                gestorBD.obtenerCompras(criterio_cancionYaComprada,function(compras){
+                    if(compras ==null || compras.length > 0){
+                        functionCallback(false);
+                    } else {
+                        functionCallback(true);
+                    }
+                });
+            }
+        });
+
+    };
 
     app.get('/compras', function (req, res) {
         let criterio = { "usuario" : req.session.usuario };
@@ -260,7 +291,7 @@ module.exports = function(app, swig, gestorBD) {
                 gestorBD.obtenerCanciones(criterio,function(canciones){
                         let respuesta = swig.renderFile('views/bcompras.html',
                             {
-                                cancion : canciones
+                                canciones : canciones
                             });
                         res.send(respuesta);
                 });
