@@ -68,7 +68,11 @@ module.exports = function(app, swig, gestorBD) {
         }
         gestorBD.obtenerCancionesPg(criterio, pg , function(canciones, total ) {
             if (canciones == null) {
-                res.send("Error al listar ");
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        error: "Error al listar"
+                    });
+                res.send(respuesta);
             } else {
                 let ultimaPg = total/4;
                 if (total % 4 > 0 ){ // Sobran decimales
@@ -96,7 +100,11 @@ module.exports = function(app, swig, gestorBD) {
         let criterio = { autor : req.session.usuario };
         gestorBD.obtenerCanciones(criterio, function(canciones) {
             if (canciones == null) {
-                res.send("Error al listar ");
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        error: "Error al listar"
+                    });
+                res.send(respuesta);
             } else {
                 let respuesta = swig.renderFile('views/bpublicaciones.html',
                     {
@@ -125,7 +133,11 @@ module.exports = function(app, swig, gestorBD) {
         let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
         gestorBD.obtenerCanciones(criterio,function(canciones){
             if ( canciones == null ){
-                res.send("Error al recuperar la canción.");
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        error: "Error al recuperar la canción"
+                    });
+                res.send(respuesta);
             } else {
                 let cancionId = gestorBD.mongo.ObjectID(req.params.id);
                 let usuario = req.session.usuario;
@@ -133,7 +145,11 @@ module.exports = function(app, swig, gestorBD) {
                 usuarioPuedeComprarCancion(usuario, cancionId, function (comprar){
                     gestorBD.obtenerComentarios(criterioComentario,function(comentarios){
                         if(comentarios == null){
-                            res.send("Error al recuperar los comentarios de la canción.");
+                            let respuesta = swig.renderFile('views/error.html',
+                                {
+                                    error: "Error al recuperar los comentarios de la canción"
+                                });
+                            res.send(respuesta);
                         } else {
                             let respuesta = swig.renderFile('views/bcancion.html',
                                 {
@@ -281,7 +297,11 @@ module.exports = function(app, swig, gestorBD) {
         let criterio = { "usuario" : req.session.usuario };
         gestorBD.obtenerCompras(criterio,function(compras){
             if ( compras == null ){
-                res.send("Error al listar");
+                let respuesta = swig.renderFile('views/error.html',
+                    {
+                        error: "Error al listar"
+                    });
+                res.send(respuesta);
             } else {
                 let cancionesCompradasIds = [];
                 for(i=0; i< compras.length; i++)
